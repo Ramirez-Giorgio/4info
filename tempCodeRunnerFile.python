@@ -1,0 +1,17 @@
+# CREAZIONE FILE valori.txt
+with open("valori.txt", "w") as f:
+    f.write("10\n5\n15\n20")
+numeri = []
+with open("valori.txt", "r") as f:
+    for riga in f:
+        numeri.append(int(riga.strip()))
+somma = sum(numeri)
+print("Somma dei numeri:", somma)
+incrementi = {}
+for numero in numeri:
+    incremento = numero + 1   # incremento semplice
+    incrementi[numero] = incremento
+with open("risultati_incrementati.txt", "w") as f:
+    for originale, incrementato in incrementi.items():
+        f.write(f"{originale}==>{incrementato}\n")
+print("Risultati salvati nel file risultati_incrementati.txt")

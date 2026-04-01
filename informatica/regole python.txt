@@ -1,0 +1,23 @@
+python 
+sintassi simile 
+linguaggio interpretatore 
+scanf = input 
+printf = print ;nome = input("inserisci il tuo nome: ")#string ; n = int(input("inserisci la tua età: "))#per interi sennò float SIMILE AL C
+riconosce ciò che viene inserito senza l uso di dichiarazioni più complesse
+come per stringa(""/'' dopo =) o altro basta mettere = 
+se si vuole usare '" nella stessa ma come apostrofo si usa \ ex frase = "l \'altro" cosi da non dare errore visto che entrambi sono usati ma in contesti diversi
+se inserisco a,b = x,y a sarà x e b sarà y
+non c'è bisogno di ;
+// divisione intera 
+/ divisione reale 5/2=2.5
+*moltiplicazione
+**elevazione a potenza
+j uso per parte immaginaria del numero 
+.imag per immaginario mentre .real per il reale
+per concatenare più parole si usa il * come parola*4 mi stamperà 'intintintint'
+per vedere il tipo di dato che viene preso dal programma print(type(n)) e mi dira il tipo di variabile che è
+la libreria math ha tutto cio che riguarda calcoli più complessi di matematica
+si inserisce come sul c con include ma con import math in questo caso senza # o <.h o altro>
+per inserire negli output non si usa %d ma si mette dopo il testo nel ""'' ,r1,""'',r2
+se voglio usare la libreria uso math. 
+uso if senza () e senza ; solo : e se non ad esempio nell if c'è un input e non si inserisce nulla si mette if not xxx :

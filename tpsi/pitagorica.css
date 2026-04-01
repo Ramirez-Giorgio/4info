@@ -1,0 +1,55 @@
+.main-title {
+    text-align: center;
+    font-family: 'Bebas Neue';
+    font-size: 60px;
+}
+
+.input-top {
+    margin: auto;
+    border: 2px solid grey;
+    width: 40%;
+    padding: 10px;
+    border-top: none;
+    border-left: none;
+    border-right: none;
+    margin-top: 30px;
+    margin-bottom: 30px;
+}
+
+.input-bottom {
+    margin: auto;
+    border: 2px solid grey;
+    width: 40%;
+    padding: 10px;
+    border-bottom: none;
+    border-left: none;
+    border-right: none;
+    margin-top: 30px;
+    margin-bottom: 30px;
+}
+
+table {
+    margin: auto;
+    /* width: 40%; */
+    border-collapse: collapse;
+}
+
+td {
+    border: 1px solid black;
+    text-align: center;
+    width: 40px;
+    height: 40px;
+}
+
+.header {
+    font-weight: bolder;
+    background-color: gainsboro;
+}
+
+.multiplo {
+    background-color: yellow;
+}
+
+.divisore {
+    background-color: lightgreen;
+}

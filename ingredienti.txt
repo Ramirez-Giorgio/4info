@@ -1,0 +1,6 @@
+ingrediente,quantita
+farina,500
+zucchero,200
+uova,4
+burro,100
+latte,250

@@ -1,0 +1,4 @@
+Ruota Panoramica
+Biglietti: 1
+Incasso: 15.00 €
+--------------------

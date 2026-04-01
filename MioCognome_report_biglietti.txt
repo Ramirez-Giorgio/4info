@@ -1,0 +1,2 @@
+ID: B1 | Vis: Verdi | Attr: Bruco Mela | Prezzo: 10.0€
+ID: B2 | Vis: Verdi | Attr: Bruco Mela | Prezzo: 10.0€

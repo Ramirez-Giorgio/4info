@@ -1,0 +1,1 @@
+5001, Visitatore:Rossi, Attr:Ruota Panoramica, Prezzo:15€

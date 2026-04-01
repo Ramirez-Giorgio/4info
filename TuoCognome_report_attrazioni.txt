@@ -1,0 +1,1 @@
+nome attrazione:Ruota Panoramica,tipo attrazione:giostra,capacita massima:50|codice:101

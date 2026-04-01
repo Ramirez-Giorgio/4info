@@ -1,0 +1,10 @@
+import math
+a = int(input("inserisci l'angolo:"))
+rad = math.radians(a)
+print(f"l'angolo in radianti è {rad:2f}")
+sin = math.sin(a)
+print(f"il seno dell'angolo è {sin:2f}")
+cos = math.cos(a)
+print(f"il coseno dell'angolo è {cos:2f}")
+tan = math.tan(a)
+print(f"la tangente dell'angolo è {tan:2f}")

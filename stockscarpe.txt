@@ -1,0 +1,3 @@
+nike,45,120
+adidas,45,100
+new balance,41,80
