@@ -41,7 +41,6 @@ class Patente(tk.Frame):
             self.domande_totali = [{"domanda": "Errore caricamento", "risposta": "FALSO"}]
 
     def reset_schermo(self):
-        """Sostituisce il vecchio container con uno nuovo per pulire la UI"""
         self.container.destroy()
         self.container = tk.Frame(self, bg='#393D6B')
         self.container.pack(expand=True, fill="both")
