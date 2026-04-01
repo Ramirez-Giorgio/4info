@@ -13,7 +13,7 @@ class Patente(tk.Frame):
         self.domande = [] 
         self.indice_domanda = 0
         self.risposte_utente = {}
-        self.tempo_rimanente = 20 * 60 
+        self.tempo_rimanente =60 #20 * 60 
         self.timer_attivo = False
         self.modalita_esame = False # Nuova variabile per distinguere le modalità
         
@@ -76,7 +76,7 @@ class Patente(tk.Frame):
         self.indice_domanda = 0
         self.risposte_utente = {}
         self.timer_attivo = con_timer
-        self.tempo_rimanente = 20 * 60 
+        self.tempo_rimanente =60# 20 * 60 
         self.schermata_quiz()
         
         if con_timer: 
