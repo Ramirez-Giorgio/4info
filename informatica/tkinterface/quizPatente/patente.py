@@ -9,12 +9,11 @@ class Patente(tk.Frame):
         self.master.geometry('700x600')
         self.pack(expand=True, fill="both")
         
-        # Inizializzazione variabili
         self.domande_totali = []
         self.domande = [] 
         self.indice_domanda = 0
         self.risposte_utente = {}
-        self.tempo_rimanente = 20 * 60 
+        self.tempo_rimanente = 30 * 60 
         self.timer_attivo = False
         
         self.container = tk.Frame(self, bg='#393D6B')
@@ -73,14 +72,13 @@ class Patente(tk.Frame):
         if not self.vnome.get().strip():
             messagebox.showwarning('Attenzione', 'Inserisci il nome!')
             return
-        
-        # Selezione sequenziale (senza random) delle prime 30 domande
+    
         self.domande = self.domande_totali[:30]
             
         self.indice_domanda = 0
         self.risposte_utente = {}
         self.timer_attivo = con_timer
-        self.tempo_rimanente = 20 * 60 
+        self.tempo_rimanente = 30 * 60 
         self.schermata_quiz()
         
         if con_timer: 
