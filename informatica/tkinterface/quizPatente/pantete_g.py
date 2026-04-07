@@ -1,17 +1,14 @@
 import tkinter as tk
 from tkinter import messagebox, ttk
 import csv
-import os
-#from PIL import Image, ImageTk # Necessaria per le immagini (pip install Pillow)
 
 class Patente(tk.Frame):
     def __init__(self, master=None):
         super().__init__(master)
-        self.master.title('Simulatore Quiz Patente A e B')
+        self.master.title('Simulatore Quiz Patente')
         self.master.geometry('800x700')
         self.pack(expand=True, fill="both")
         
-        # Variabili di stato
         self.domande_totali = []
         self.domande = [] 
         self.indice_domanda = 0
@@ -28,25 +25,40 @@ class Patente(tk.Frame):
         self.crea_widgets_home()
 
     def carica_domande(self):
-        """Carica le domande dal CSV"""
-        try:
-            if not os.path.exists('domande_patente.csv'):
-                raise FileNotFoundError("File 'domande_patente.csv' non trovato.")
+            """Carica le domande dal CSV senza usare seek()"""
+            try:
+                with open('domande_patente.csv', mode='r', encoding='utf-8') as f:
+                    # Leggiamo tutte le righe del file in una lista
+                    righe = f.readlines()
                 
-            with open('domande_patente.csv', mode='r', encoding='utf-8') as f:
-                prima_riga = f.readline()
-                separatore = ';' if ';' in prima_riga else ','
-                f.seek(0)
-                reader = csv.DictReader(f, delimiter=separatore)
-                reader.fieldnames = [name.strip().lower() for name in reader.fieldnames]
-                self.domande_totali = list(reader)
-        except Exception as e:
-            messagebox.showerror("Errore", f"Errore caricamento dati: {e}")
-            self.domande_totali = [{"domanda": "Errore database", "risposta": "FALSO", "immagine": ""}]
+                if not righe:
+                    raise ValueError("Il file è vuoto")
 
+                # Determiniamo il separatore dalla prima riga (header)
+                intestazione = righe[0]
+                separatore = ';' if ';' in intestazione else ','
+                
+                # Usiamo il modulo csv per processare la lista di stringhe (tranne la prima)
+                # Passando 'righe' direttamente al DictReader
+                reader = csv.DictReader(righe, delimiter=separatore)
+                
+                # Puliamo i nomi delle colonne (minuscolo e senza spazi)
+                reader.fieldnames = [name.strip().lower() for name in reader.fieldnames]
+                
+                # Trasformiamo il reader in una lista di dizionari
+                self.domande_totali = list(reader)
+
+            except FileNotFoundError:
+                messagebox.showerror("errore", "file domande non trovato")            
+            except Exception as e:
+                messagebox.showerror("errore", f"errore: {e}")
+                self.domande_totali = [{"domanda": "errore con le domande", "risposta": "FALSO"}]
+        
     def reset_schermo(self):
-        for widget in self.container.winfo_children():
-            widget.destroy()
+        self.container.destroy()
+        
+        self.container = tk.Frame(self,bg='#393D6B')
+        self.container.pack(expand=True, fill='both')
 
     def crea_widgets_home(self):
         self.reset_schermo()
@@ -71,7 +83,6 @@ class Patente(tk.Frame):
             messagebox.showwarning('Attenzione', 'Inserisci il tuo nome prima di iniziare!')
             return
         
-        # In esame prendiamo 30 domande (o quante ne hai), in simulazione tutte
         self.domande = self.domande_totali[:30]
         self.indice_domanda = 0
         self.risposte_utente = {}
@@ -86,7 +97,6 @@ class Patente(tk.Frame):
     def schermata_quiz(self):
         self.reset_schermo()
         
-        # --- HEADER (Nome + Timer) ---
         header = tk.Frame(self.container, bg="#f0f0f0", height=50)
         header.pack(fill="x")
         tk.Label(header, text=f"Candidato: {self.vnome.get()}", bg="#f0f0f0", font=("Arial", 10, "bold")).pack(side="left", padx=20)
@@ -95,7 +105,6 @@ class Patente(tk.Frame):
             self.lbl_timer = tk.Label(header, text="", font=("Arial", 12, "bold"), fg="red", bg="#f0f0f0")
             self.lbl_timer.pack(side="right", padx=20)
             
-            # Barra del tempo visiva
             self.time_bar = ttk.Progressbar(self.container, maximum=self.tempo_massimo, length=700)
             self.time_bar.pack(fill="x", padx=10)
             self.time_bar['value'] = self.tempo_rimanente
@@ -112,17 +121,6 @@ class Patente(tk.Frame):
         
         domanda_attuale = self.domande[self.indice_domanda]
         
-        # # Immagine (se presente)
-        # img_path = domanda_attuale.get('immagine', '').strip()
-        # if img_path and os.path.exists(img_path):
-        #     try:
-        #         img = Image.open(img_path)
-        #         img = img.resize((200, 150), Image.LANCZOS)
-        #         self.photo = ImageTk.PhotoImage(img)
-        #         #tk.Label(corpo, image=self.photo, bg='#393D6B').pack(pady=10)
-        #     except: 
-        #         pass
-
         # Testo Domanda
         colore_testo = "white"
         if self.modalita_revisione:
@@ -136,16 +134,22 @@ class Patente(tk.Frame):
         tk.Label(corpo, text=domanda_attuale.get('domanda', ""), font=("Arial", 16), 
                  bg='#393D6B', fg=colore_testo, wraplength=600, justify="center").pack(pady=20)
 
-        # --- INPUT ---
         self.var_risposta = tk.StringVar(value=self.risposte_utente.get(self.indice_domanda, ""))
         radio_frame = tk.Frame(corpo, bg='#393D6B')
         radio_frame.pack(pady=10)
         
-        state = "disabled" if self.modalita_revisione else "normal"
-        tk.Radiobutton(radio_frame, text="VERO", variable=self.var_risposta, value="VERO", font=("Arial", 12, "bold"), width=10, indicatoron=0, state=state).pack(side="left", padx=10)
-        tk.Radiobutton(radio_frame, text="FALSO", variable=self.var_risposta, value="FALSO", font=("Arial", 12, "bold"), width=10, indicatoron=0, state=state).pack(side="left", padx=10)
+        #state = "disabled" if self.modalita_revisione else "normal"
+        
+        # Nel metodo schermata_quiz, sostituisci la parte dei Radiobutton con questa:
+        radio_frame = tk.Frame(corpo, bg='#393D6B')
+        radio_frame.pack(pady=10)
 
-        # --- NAVIGAZIONE ---
+        # Creiamo i pulsanti senza passare lo "state"
+        tk.Radiobutton(radio_frame, text="VERO", variable=self.var_risposta, value="VERO", 
+                    font=("Arial", 12, "bold"), width=10, indicatoron=0).pack(side="left", padx=10)
+
+        tk.Radiobutton(radio_frame, text="FALSO", variable=self.var_risposta, value="FALSO", 
+               font=("Arial", 12, "bold"), width=10, indicatoron=0).pack(side="left", padx=10)
         nav = tk.Frame(self.container, bg='#393D6B')
         nav.pack(side="bottom", fill="x", pady=20)
         
@@ -188,7 +192,7 @@ class Patente(tk.Frame):
 
     def conferma_invio(self):
         self.risposte_utente[self.indice_domanda] = self.var_risposta.get()
-        if messagebox.askyesno("Conferma", "Sei sicuro di voler consegnare il quiz?"):
+        if messagebox.askyesno("invio", "consegni l'esame?"):
             self.mostra_risultato()
 
     def mostra_risultato(self):
@@ -205,7 +209,7 @@ class Patente(tk.Frame):
             else: 
                 sbagliate += 1
         
-        esito = "SUPERATO" if sbagliate <= 3 else "NON SUPERATO"
+        esito = "PROMOSSO" if sbagliate <= 3 else "BOCCIATO"
         colore = "green" if sbagliate <= 3 else "red"
 
         res_frame = tk.Frame(self.container, bg='#393D6B')
@@ -213,7 +217,7 @@ class Patente(tk.Frame):
 
         tk.Label(res_frame, text="RISULTATO FINALE", font=("Arial", 20, "bold"), bg='#393D6B', fg="white").pack(pady=10)
         tk.Label(res_frame, text=f"Candidato: {self.vnome.get()}", font=("Arial", 14), bg='#393D6B', fg="white").pack()
-        tk.Label(res_frame, text=f"Risposte corrette: {corrette}", font=("Arial", 12), bg='#393D6B', fg="lightgreen").pack()
+        tk.Label(res_frame, text=f"Risposte giuste: {corrette}", font=("Arial", 12), bg='#393D6B', fg="lightgreen").pack()
         tk.Label(res_frame, text=f"Risposte sbagliate: {sbagliate}", font=("Arial", 12), bg='#393D6B', fg="orange").pack()
         tk.Label(res_frame, text=f"Punteggio: {corrette}/{len(self.domande)}", font=("Arial", 14, "bold"), bg='#393D6B', fg="white").pack(pady=10)
         tk.Label(res_frame, text=f"ESAME {esito}", font=("Arial", 24, "bold"), bg='#393D6B', fg=colore).pack(pady=20)
