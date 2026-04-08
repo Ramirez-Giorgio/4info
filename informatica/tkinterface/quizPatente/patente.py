@@ -1,183 +1,238 @@
 import tkinter as tk
-from tkinter import messagebox
+from tkinter import messagebox, ttk
 import csv
 
 class Patente(tk.Frame):
     def __init__(self, master=None):
         super().__init__(master)
-        self.master.title('Simulatore Patente')
-        self.master.geometry('700x600')
-        self.pack(expand=True, fill="both")
-        
-        self.domande_totali = []
-        self.domande = [] 
+        self.master.title('Simulatore Quiz Patente')
+        self.master.geometry('800x700')
+        self.pack(expand=True, fill='both')
+
+        self.tot_domande = []
+        self.domande = []
         self.indice_domanda = 0
-        self.risposte_utente = {}
-        self.tempo_rimanente = 30 * 60 
-        self.timer_attivo = False
-        
+        self.risposte = {}
+        self.max_tempo = 1800
+        self.tempo_rimanente = 1800
+        self.timer_attivo = 0
+        self.mod_revisione = 0
+
         self.container = tk.Frame(self, bg='#393D6B')
-        self.container.pack(expand=True, fill="both")
-        
+        self.container.pack(expand=True, fill='both')
+
         self.carica_domande()
-        self.crea_widgets_home()
+        self.crea_widget()
 
     def carica_domande(self):
         try:
-            with open('domande_patente.csv', mode='r') as f:
-                prima_riga = f.readline()
-                separatore = ';' if ';' in prima_riga else ','
-                f.seek(0)
-                
-                reader = csv.DictReader(f, delimiter=separatore)
-                reader.fieldnames = [name.strip().lower() for name in reader.fieldnames]
-                self.domande_totali = list(reader)
+            with open('domande_patente.csv', mode='r', encoding='utf-8') as f:
+                righe = f.readlines()
+            
+            conteggio = len(righe)
+            if conteggio == 0:
+                messagebox.showerror('Errore', 'File vuoto')
+                return
 
-            if not self.domande_totali:
-                raise ValueError("Il file CSV è vuoto")
+            reader = csv.DictReader(righe, delimiter=',')
+            puliti = []
+            for n in reader.fieldnames:
+                puliti.append(n.strip().lower())
+            reader.fieldnames = puliti
+            
+            self.tot_domande = list(reader)
+        except FileNotFoundError:
+            messagebox.showerror('Errore', 'File non trovato')
         except Exception as e:
-            messagebox.showerror("Errore", f"Errore file: {e}")
-            self.domande_totali = [{"domanda": "Errore caricamento", "risposta": "FALSO"}]
+            messagebox.showerror('Errore', str(e))
 
     def reset_schermo(self):
         self.container.destroy()
         self.container = tk.Frame(self, bg='#393D6B')
-        self.container.pack(expand=True, fill="both")
+        self.container.pack(expand=True, fill='both')
 
-    def crea_widgets_home(self):
+    def crea_widget(self):
         self.reset_schermo()
-        self.timer_attivo = False
+        self.timer_attivo = 0
+        self.mod_revisione = 0
         
-        inner_frame = tk.Frame(self.container, bg='#393D6B')
-        inner_frame.place(relx=0.5, rely=0.5, anchor='center')
+        inner = tk.Frame(self.container, bg='#393D6B')
+        inner.place(relx=0.5, rely=0.5, anchor='center')
         
-        tk.Label(inner_frame, text='Simulatore Quiz Patente', bg='#393D6B', fg='white', font=('Arial', 22, 'bold')).pack(pady=20)
-        tk.Label(inner_frame, text='Inserisci il tuo nome:', bg='#393D6B', fg='white').pack()
+        tk.Label(inner, text='SIMULATORE QUIZ PATENTE', bg='#393D6B', fg='white', font=('Arial', 24, 'bold')).pack(pady=20)
+        tk.Label(inner, text='Inserisci il tuo nome:', bg='#393D6B', fg='white', font=('Arial', 12)).pack()
         
         self.vnome = tk.StringVar()
-        tk.Entry(inner_frame, textvariable=self.vnome, font=("Arial", 12)).pack(pady=10)
+        tk.Entry(inner, textvariable=self.vnome, font=("Arial", 14), width=30).pack(pady=10)
 
-        # Rimosse le lambda: usiamo riferimenti diretti a funzioni wrapper
-        tk.Button(inner_frame, text='SIMULAZIONE', width=25, height=2, command=self.avvia_simulazione).pack(pady=5)
-        tk.Button(inner_frame, text='ESAME (20 min)', width=25, height=2, bg="#d1e7ff", command=self.avvia_esame).pack(pady=5)
-        tk.Button(inner_frame, text="ESCI", width=25, fg="red", command=self.master.destroy).pack(pady=20)
-
-    def avvia_simulazione(self):
-        self.avvia_quiz(False)
-
-    def avvia_esame(self):
-        self.avvia_quiz(True)
+        tk.Button(inner, text='SIMULAZIONE (Senza tempo)', width=30, height=2, command=lambda: self.avvia_quiz(0)).pack(pady=5)
+        tk.Button(inner, text='ESAME (30 min - Con Timer)', width=30, height=2, bg="#d1e7ff", command=lambda: self.avvia_quiz(1)).pack(pady=5)
+        tk.Button(inner, text="ESCI", width=30, fg="red", command=self.master.destroy).pack(pady=20)
 
     def avvia_quiz(self, con_timer):
-        if not self.vnome.get().strip():
-            messagebox.showwarning('Attenzione', 'Inserisci il nome!')
+        nome_inserito = self.vnome.get().strip()
+        if nome_inserito == "":
+            messagebox.showwarning('Attenzione', 'inserisci il nome')
             return
-    
-        self.domande = self.domande_totali[:30]
-            
+        
+        self.domande = self.tot_domande
         self.indice_domanda = 0
-        self.risposte_utente = {}
+        self.risposte = {}
         self.timer_attivo = con_timer
-        self.tempo_rimanente = 30 * 60 
+        self.tempo_rimanente = self.max_tempo
+        self.mod_revisione = 0
+        
         self.schermata_quiz()
         
-        if con_timer: 
+        if con_timer == 1: 
             self.aggiorna_timer()
 
     def schermata_quiz(self):
-        self.reset_schermo()
-        
-        # Header
-        header = tk.Frame(self.container, bg="#f0f0f0")
+        self.reset_schermo()        
+        header = tk.Frame(self.container, bg="#f0f0f0", height=50)
         header.pack(fill="x")
-        tk.Label(header, text=f"Candidato: {self.vnome.get()}", bg="#f0f0f0").pack(side="left", padx=20)
+        tk.Label(header, text=f"Candidato: {self.vnome.get()}", bg="#f0f0f0", font=("Arial", 10, "bold")).pack(side="left", padx=20)
         
-        if self.timer_attivo:
+        if self.timer_attivo == 1:
             self.lbl_timer = tk.Label(header, text="", font=("Arial", 12, "bold"), fg="red", bg="#f0f0f0")
             self.lbl_timer.pack(side="right", padx=20)
+            
+            self.time_bar = ttk.Progressbar(self.container, maximum=self.max_tempo, length=700)
+            self.time_bar.pack(fill="x", padx=10)
+            self.time_bar['value'] = self.tempo_rimanente
 
-        # Domanda
+        total_d = len(self.domande)
+        risposte_date = len(self.risposte)
+        
+        prog_val = 0
+        if total_d > 0:
+            prog_val = (risposte_date / total_d) * 100
+
+        pb = ttk.Progressbar(self.container, length=700, value=prog_val)
+        pb.pack(pady=10)
+        tk.Label(self.container, text=f"Risposte date: {risposte_date}/{total_d}", bg='#393D6B', fg='white').pack()
+
         corpo = tk.Frame(self.container, bg='#393D6B')
         corpo.pack(expand=True, fill="both", padx=40)
         
         domanda_attuale = self.domande[self.indice_domanda]
-        tk.Label(corpo, text=f"DOMANDA {self.indice_domanda + 1} / {len(self.domande)}", 
-                 bg='#393D6B', fg='white', font=("Arial", 12, "bold")).pack(pady=10)
         
-        testo = domanda_attuale.get('domanda', "Testo mancante").strip()
-        tk.Label(corpo, text=testo, font=("Arial", 15), bg='#393D6B', fg='white', wraplength=550).pack(pady=30)
+        colore_testo = "white"
+        if self.mod_revisione == 1:
+            scelta = self.risposte.get(self.indice_domanda, "")
+            corretta = domanda_attuale.get('risposta', "").upper()
+            if scelta == corretta:
+                colore_testo = "green"
+            else:
+                colore_testo = "red"
 
-        # Input Risposta
-        self.var_risposta = tk.StringVar(value=self.risposte_utente.get(self.indice_domanda, ""))
+        tk.Label(corpo, text=f"DOMANDA {self.indice_domanda + 1} / {total_d}", bg='#393D6B', fg='yellow', font=("Arial", 12, "bold")).pack()
+        tk.Label(corpo, text=domanda_attuale.get('domanda', ""), font=("Arial", 16), bg='#393D6B', fg=colore_testo, wraplength=600, justify="center").pack(pady=20)
+
+        valore_precedente = self.risposte.get(self.indice_domanda, "")
+        self.var_risposta = tk.StringVar(value=valore_precedente)
         radio_frame = tk.Frame(corpo, bg='#393D6B')
         radio_frame.pack(pady=20)
-        
-        tk.Radiobutton(radio_frame, text="VERO", variable=self.var_risposta, value="VERO", indicatoron=0, width=10).pack(side="left", padx=20)
-        tk.Radiobutton(radio_frame, text="FALSO", variable=self.var_risposta, value="FALSO", indicatoron=0, width=10).pack(side="left", padx=20)
 
-        # Navigazione
-        nav = tk.Frame(self.container)
-        nav.pack(side="bottom", fill="x", pady=30)
+        tk.Radiobutton(radio_frame, text="VERO", variable=self.var_risposta, value="VERO", font=("Arial", 12, "bold"), width=10, indicatoron=0).pack(side="left", padx=10)
+        tk.Radiobutton(radio_frame, text="FALSO", variable=self.var_risposta, value="FALSO", font=("Arial", 12, "bold"), width=10, indicatoron=0).pack(side="left", padx=10)
+
+        nav = tk.Frame(self.container, bg='#393D6B')
+        nav.pack(side="bottom", fill="x", pady=20)
         
-        if self.indice_domanda > 0:
-            tk.Button(nav, text="<<", command=self.domanda_precedente, width=10).pack(side="left", padx=20)
+        tk.Button(nav, text="<< Precedente", command=self.domanda_precedente, width=15).pack(side="left", padx=20)
         
-        if self.indice_domanda < len(self.domande) - 1:
-            tk.Button(nav, text=">>", command=self.domanda_successiva, width=10).pack(side="left", padx=10)
+        if self.indice_domanda < total_d - 1:
+            tk.Button(nav, text="Successiva >>", command=self.domanda_successiva, width=15).pack(side="left")
+        
+        if self.mod_revisione == 0:
+            tk.Button(nav, text="INVIA QUIZ", bg="#4CAF50", fg="white", font=("Arial", 10, "bold"), command=self.conferma_invio, width=15).pack(side="right", padx=20)
         else:
-            tk.Button(nav, text="INVIA", bg="green", command=self.conferma_invio, width=10).pack(side="right", padx=20)
+            tk.Button(nav, text="TORNA AI RISULTATI", command=self.mostra_risultato, width=18).pack(side="right", padx=20)
 
     def domanda_successiva(self):
-        self.risposte_utente[self.indice_domanda] = self.var_risposta.get()
-        self.indice_domanda += 1
-        self.schermata_quiz()
+        if self.mod_revisione == 0:
+            self.risposte[self.indice_domanda] = self.var_risposta.get()
+        
+        limite = len(self.domande) - 1
+        if self.indice_domanda < limite:
+            self.indice_domanda = self.indice_domanda + 1
+            self.schermata_quiz()
 
     def domanda_precedente(self):
-        self.risposte_utente[self.indice_domanda] = self.var_risposta.get()
-        self.indice_domanda -= 1
-        self.schermata_quiz()
+        if self.mod_revisione == 0:
+            self.risposte[self.indice_domanda] = self.var_risposta.get()
+            
+        if self.indice_domanda > 0:
+            self.indice_domanda = self.indice_domanda - 1
+            self.schermata_quiz()
 
     def aggiorna_timer(self):
-        if self.timer_attivo and self.tempo_rimanente > 0:
-            m, s = divmod(self.tempo_rimanente, 60)
-            if hasattr(self, 'lbl_timer'):
-                self.lbl_timer.config(text=f"Tempo: {m:02d}:{s:02d}")
-            self.tempo_rimanente -= 1
-            self.after(1000, self.aggiorna_timer)
-        elif self.tempo_rimanente <= 0 and self.timer_attivo:
-            self.mostra_risultato()
+        if self.timer_attivo == 1:
+            if self.tempo_rimanente >= 0:
+                ore, resto = divmod(self.tempo_rimanente, 3600)
+                minuti, secondi = divmod(resto, 60)
+                
+                self.lbl_timer.config(text=f"{ore:02d}:{minuti:02d}:{secondi:02d}")
+                self.time_bar['value'] = self.tempo_rimanente
+                
+                self.tempo_rimanente = self.tempo_rimanente - 1
+                self.after(1000, self.aggiorna_timer)
+            else:
+                self.lbl_timer.config(text="Tempo finito!")
+                messagebox.showinfo("Tempo finito", "Invio del quiz")
+                self.mostra_risultato()
 
     def conferma_invio(self):
-        self.risposte_utente[self.indice_domanda] = self.var_risposta.get()
-        if messagebox.askyesno("Fine", "Consegnare il quiz?"):
+        self.risposte[self.indice_domanda] = self.var_risposta.get()
+        conferma = messagebox.askyesno("Conferma", "consegni il quiz?")
+        if conferma == 1:
             self.mostra_risultato()
 
     def mostra_risultato(self):
-            self.timer_attivo = False
-            self.reset_schermo()
-            
-            errori = 0
-            numero_domande = len(self.domande)
-            
-            for i in range(numero_domande):
-                q = self.domande[i]
-                risposta_data = self.risposte_utente.get(i,"").strip().upper()
-                risposta_corretta = q.get('risposta',"").strip().upper()
-                
-                if risposta_data != risposta_corretta:
-                    errori += 1
-            
-            if errori <= 3:
-                esito = "SUPERATO"
-                colore = "green"
-            else:
-                esito = "BOCCIATO"
-                colore = "red"
+        self.timer_attivo = 0
+        self.reset_schermo()
+        
+        corrette = 0
+        sbagliate = 0
+        totale = len(self.domande)
 
-            tk.Label(self.container, text=f"ERRORI: {errori}", font=("Arial", 20), bg='#393D6B', fg=colore).pack(pady=20)
-            tk.Label(self.container, text=esito, font=("Arial", 30, "bold"), bg='#393D6B', fg=colore).pack(pady=20)
-            
-            tk.Button(self.container, text="HOME", command=self.crea_widgets_home, width=15).pack(pady=10)
+        for i in range(totale):
+            utente = self.risposte.get(i, "")
+            data = utente.strip().upper()
+            originale = self.domande[i].get('risposta', "")
+            real = originale.strip().upper()
+            if data == real: 
+                corrette = corrette + 1
+            else: 
+                sbagliate = sbagliate + 1
+        
+        if sbagliate <= 3:
+            esito = "PROMOSSO"
+            colore = "green"
+        else: 
+            esito = "BOCCIATO"
+            colore = "red"
+
+        res_frame = tk.Frame(self.container, bg='#393D6B')
+        res_frame.place(relx=0.5, rely=0.5, anchor='center')
+
+        tk.Label(res_frame, text="RISULTATO FINALE", font=("Arial", 20, "bold"), bg='#393D6B', fg="white").pack(pady=10)
+        tk.Label(res_frame, text=f"Candidato: {self.vnome.get()}", font=("Arial", 14), bg='#393D6B', fg="white").pack()
+        tk.Label(res_frame, text=f"Risposte giuste: {corrette}", font=("Arial", 12), bg='#393D6B', fg="lightgreen").pack()
+        tk.Label(res_frame, text=f"Risposte sbagliate: {sbagliate}", font=("Arial", 12), bg='#393D6B', fg="orange").pack()
+        tk.Label(res_frame, text=f"Punteggio: {corrette}/{totale}", font=("Arial", 14, "bold"), bg='#393D6B', fg="white").pack(pady=10)
+        tk.Label(res_frame, text=f"ESITO: {esito}", font=("Arial", 24, "bold"), bg='#393D6B', fg=colore).pack(pady=20)
+
+        tk.Button(res_frame, text="REVISIONA", width=25, command=self.avvia_revisione).pack(pady=5)
+        tk.Button(res_frame, text="HOME", width=25, command=self.crea_widget).pack(pady=5)
+        tk.Button(res_frame, text="ESCI", width=25, fg="red", command=self.master.destroy).pack(pady=5)
+
+    def avvia_revisione(self):
+        self.mod_revisione = 1
+        self.indice_domanda = 0
+        self.schermata_quiz()
+
 if __name__ == '__main__':
     root = tk.Tk()
     app = Patente(master=root)
