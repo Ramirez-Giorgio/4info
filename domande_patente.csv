@@ -1,31 +1,91 @@
-Domanda,Risposta
-La carreggiata puo' essere a senso unico di circolazione,Vero
-Il segnale di STOP obbliga a fermarsi solo se arrivano altri veicoli,Falso
-Fuori dei centri abitati e' obbligatorio accendere le luci di posizione,Vero
-La distanza di sicurezza dipende anche dall'efficienza dei freni,Vero
-Il limite massimo di velocita' sulle autostrade per i neopatentati e' di 110 km/h,Falso
-Le strisce bianche discontinue al centro della carreggiata permettono il sorpasso,Vero
-In presenza di tratti di strada ghiacciati e' opportuno distanziarsi dal veicolo che precede,Vero
-Il casco e' obbligatorio solo per i conducenti di ciclomotori a due ruote,Falso
-Lo spazio di frenata aumenta se la strada e' in discesa,Vero
-Il segnale di divieto di sosta vale di norma 24 ore su 24 sulle strade extraurbane,Vero
-In un incrocio senza segnali ha la precedenza chi proviene da sinistra,Falso
-La revisione dell'auto va fatta ogni 4 anni dalla prima immatricolazione,Vero
-Il conducente deve regolare la velocita' in relazione alle condizioni del traffico,Vero
-L'assicurazione RCA copre i danni subiti dal conducente che ha causato l'incidente,Falso
-Sulle autostrade e' vietato il transito di pedoni e animali,Vero
-Il segnale di "Passaggio a livello senza barriere" e' preceduto dal pannello distanziometrico a tre barre rosse,Vero
-e' possibile sorpassare in prossimita' dei dossi su strade a due corsie e doppio senso di marcia,Falso
-La distanza di sicurezza deve essere di almeno 100 metri se si viaggia a 50 km/h,Falso
-Lo specchietto retrovisore interno deve essere regolato in modo da vedere l'intero lunotto posteriore,Vero
-In caso di nebbia fitta e' opportuno accendere i proiettori anabbaglianti,Vero
-Il pannello integrativo con la scritta "P" indica un parcheggio,Vero
-La forza aderente aumenta se la strada e' bagnata,Falso
-I neopatentati non possono guidare veicoli con potenza superiore a 55 kW/t per il primo anno,Vero
-La luce gialla fissa del semaforo obbliga a fermarsi se lo si puo' fare in sicurezza,Vero
-Durante la sosta il conducente puo' allontanarsi dal veicolo,Vero
-Il segnale di "Cantiere Mobile" preannuncia un restringimento della carreggiata,Vero
-e' vietato l'uso dei proiettori abbaglianti nei centri abitati,Vero
-In caso di ingombro della carreggiata per caduta accidentale di carico il conducente deve presegnalare l'ostacolo con il segnale mobile di pericolo,Vero
-Il valore della distanza di sicurezza da mantenere da una macchina sgombraneve in funzione e' di 20 metri,Vero
-La sospensione della patente e' disposta quando il conducente circola contromano in curva,Vero
+Domanda,Risposta,Immagini
+La carreggiata puo' essere a senso unico di circolazione,Vero,
+Il segnale di STOP obbliga a fermarsi solo se arrivano altri veicoli,Falso,
+Fuori dei centri abitati e' obbligatorio accendere le luci di posizione,Vero,
+La distanza di sicurezza dipende anche dall'efficienza dei freni,Vero,
+Il limite massimo di velocita' sulle autostrade per i neopatentati e' di 110 km/h,Falso,
+Le strisce bianche discontinue al centro della carreggiata permettono il sorpasso,Vero,
+In presenza di tratti di strada ghiacciati e' opportuno distanziarsi dal veicolo che precede,Vero,
+Il casco e' obbligatorio solo per i conducenti di ciclomotori a due ruote,Falso,
+Lo spazio di frenata aumenta se la strada e' in discesa,Vero,
+Il segnale di divieto di sosta vale di norma 24 ore su 24 sulle strade extraurbane,Vero,
+In un incrocio senza segnali ha la precedenza chi proviene da sinistra,Falso,
+La revisione dell'auto va fatta ogni 4 anni dalla prima immatricolazione,Vero,
+Il conducente deve regolare la velocita' in relazione alle condizioni del traffico,Vero,
+L'assicurazione RCA copre i danni subiti dal conducente che ha causato l'incidente,Falso,
+Sulle autostrade e' vietato il transito di pedoni e animali,Vero,
+Il segnale di "Passaggio a livello senza barriere" e' preceduto dal pannello distanziometrico a tre barre rosse,Vero,
+e' possibile sorpassare in prossimita' dei dossi su strade a due corsie e doppio senso di marcia,Falso,
+La distanza di sicurezza deve essere di almeno 100 metri se si viaggia a 50 km/h,Falso,
+Lo specchietto retrovisore interno deve essere regolato in modo da vedere l'intero lunotto posteriore,Vero,
+In caso di nebbia fitta e' opportuno accendere i proiettori anabbaglianti,Vero,
+Il pannello integrativo con la scritta "P" indica un parcheggio,Vero,
+La forza aderente aumenta se la strada e' bagnata,Falso,
+I neopatentati non possono guidare veicoli con potenza superiore a 55 kW/t per il primo anno,Vero,
+La luce gialla fissa del semaforo obbliga a fermarsi se lo si puo' fare in sicurezza,Vero,
+Durante la sosta il conducente puo' allontanarsi dal veicolo,Vero,
+Il segnale di "Cantiere Mobile" preannuncia un restringimento della carreggiata,Vero,
+e' vietato l'uso dei proiettori abbaglianti nei centri abitati,Vero,
+In caso di ingombro della carreggiata per caduta accidentale di carico il conducente deve presegnalare l'ostacolo con il segnale mobile di pericolo,Vero,
+Il valore della distanza di sicurezza da mantenere da una macchina sgombraneve in funzione e' di 20 metri,Vero,
+La sospensione della patente e' disposta quando il conducente circola contromano in curva,Vero,
+Il segnale raffigurato vieta il transito ai motocicli,Vero,img1.png
+Nell'incrocio raffigurato il veicolo P passa per primo,Falso,img2.png
+Il segnale raffigurato preannuncia un tratto di strada deformata,Vero,img3.png
+Il segnale raffigurato vieta il sorpasso ai veicoli di massa superiore a 3.5 t,Vero,img4.png
+Il segnale raffigurato indica la fine del limite minimo di velocita',Vero,img5.png
+Il segnale raffigurato obbliga a svoltare a destra,Vero,img6.png
+Il segnale raffigurato indica una strada senza uscita,Vero,img7.png
+Il segnale raffigurato vieta il transito ai pedoni,Vero,img8.png
+In presenza del segnale raffigurato e' permesso il transito ai soli autobus,Falso,img9.png
+Il segnale raffigurato indica la vicinanza di un ospedale,Vero,img10.png
+Il segnale raffigurato indica un'area pedonale,Vero,img11.png
+Il segnale raffigurato preannuncia un incrocio con precedenza a destra,Vero,img12.png
+Nell'incrocio raffigurato il veicolo A deve dare la precedenza a C,Vero,img13.png
+Il segnale raffigurato e' un segnale di prescrizione,Vero,img14.png
+Il segnale raffigurato preannuncia una curva pericolosa a sinistra,Vero,img15.png
+Il segnale raffigurato obbliga a passare a sinistra dell'ostacolo,Vero,img16.png
+La striscia bianca laterale continua separa la carreggiata dalla banchina,Vero,
+Il triangolo mobile di pericolo deve essere posto ad almeno 50 metri dall'ostacolo,Vero,
+Il segnale di "Fine del divieto di sorpasso" permette di sorpassare i motocicli,Vero,
+L'airbag puo' essere pericoloso se si viaggia senza cinture di sicurezza allacciate,Vero,
+In caso di pioggia occorre ridurre la velocita',Vero,
+Lo spazio totale di arresto aumenta se gli pneumatici sono usurati,Vero,
+Il segnale di "Dare Precedenza" obbliga sempre a fermarsi all'incrocio,Falso,
+Il pannello integrativo raffigurato indica la durata del divieto,Vero,img17.png
+e' vietato sorpassare un veicolo che si sia fermato per dare la precedenza ai pedoni,Vero,
+Il servosterzo aiuta a manovrare lo sterzo con minor sforzo,Vero,
+La fermata e' vietata in corrispondenza dei segnali orizzontali di preselezione,Vero,
+Il segnale di "Preavviso di direzione urbana" ha fondo bianco,Vero,
+Le luci di emergenza devono essere accese quando si e' costretti a procedere a velocita' molto ridotta,Vero,
+Il segnale raffigurato vieta il transito ai veicoli a trazione animale,Vero,img18.png
+Il segnale raffigurato preannuncia un ponte mobile,Vero,img19.png
+Sulle strade extraurbane principali il limite di velocita' e' di 110 km/h,Vero,
+La patente di categoria B abilita a condurre i tricicli a motore,Vero,
+Lo stato di shock puo' essere causato da una forte perdita di sangue,Vero,
+In caso di ferite sanguinanti occorre coprire la ferita con materiale sterile,Vero,
+Il segnale raffigurato vieta la sosta ma non la fermata,Vero,img20.png
+I delineatori di curva stretta sono segnali di pericolo,Falso,
+Il carico deve essere sistemato in modo da non cadere o disperdersi,Vero,
+L'uso del cellulare durante la guida e' ammesso solo con auricolare o vivavoce,Vero,
+Il segnale raffigurato indica la presenza di una stazione ferroviaria,Falso,img21.png
+Le luci abbaglianti vanno spente quando si incrociano altri veicoli,Vero,
+Chi guida in stato di ebbrezza rischia l'arresto,Vero,
+In caso di incendio del veicolo e' bene usare l'estintore dirigendo il getto alla base delle fiamme,Vero,
+Il segnale raffigurato preannuncia un passaggio a livello con barriere,Vero,img22.png
+La sosta e' vietata sui binari di linee ferroviarie o tramviarie,Vero,
+La luce verde del semaforo permette di svoltare a sinistra dando la precedenza ai veicoli opposti,Vero,
+Il segnale raffigurato indica un itinerario internazionale,Vero,img23.png
+Sui motocicli la targa deve essere sempre ben leggibile,Vero,
+Il segnale raffigurato preannuncia una discesa pericolosa,Vero,img24.png
+e' obbligatorio regolare la velocita' nei tratti di strada a visibilita' limitata,Vero,
+Il segnale raffigurato obbliga i conducenti a circolare a velocita' non superiore a 30 km/h,Falso,img25.png
+I catadiottri rendono piu' visibili i veicoli di notte quando sono illuminati,Vero,
+Sulle strade a senso unico la sosta e' permessa anche sul lato sinistro purche' rimanga spazio sufficiente,Vero,
+Il segnale raffigurato indica una piazzola di sosta,Vero,img26.png
+La spia dei proiettori abbaglianti e' di colore blu,Vero,
+Bisogna dare la precedenza ai mezzi pubblici che ripartono dalla fermata,Vero,
+Il segnale raffigurato vieta la marcia per file parallele,Falso,img27.png
+Il segnale raffigurato indica un comando della polizia,Falso,img28.png
+Per consumare meno carburante occorre evitare brusche accelerazioni,Vero,
+Il segnale raffigurato preannuncia un attraversamento ciclabile,Vero,img29.png
