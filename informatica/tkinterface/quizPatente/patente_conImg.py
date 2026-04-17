@@ -114,7 +114,7 @@ class Patente(tk.Frame):
             img = img.resize((350, 220), Image.Resampling.LANCZOS)
             self.foto_tk = ImageTk.PhotoImage(img)
             tk.Label(corpo, image=self.foto_tk, bg=self.color_card).pack(pady=10)
-        except:
+        except Exception:
             pass
 
         # Colore testo in revisione

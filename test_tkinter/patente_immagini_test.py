@@ -55,7 +55,6 @@ class Patente(tk.Frame):
             print(f"Errore caricamento CSV: {e}")
 
     def reset_schermo(self):
-        # Reset senza l'uso di winfo_children
         for widget in list(self.container.children.values()):
             widget.destroy()
 

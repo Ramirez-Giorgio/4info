@@ -1,0 +1,105 @@
+import pygame
+import random
+import sys
+
+# --- Inizializzazione ---
+pygame.init()
+LARGHEZZA, ALTEZZA = 800, 600
+schermo = pygame.display.set_mode((LARGHEZZA, ALTEZZA))
+pygame.display.set_caption("Nebula Survival")
+clock = pygame.time.Clock()
+font_punti = pygame.font.SysFont("Arial", 30)
+
+# --- Colori ---
+NERO = (10, 10, 20)
+BIANCO = (255, 255, 255)
+VERDE = (0, 255, 100)
+ROSSO = (255, 50, 50)
+GIALLO = (255, 255, 0)
+
+# --- Classi e Funzioni ---
+def mostra_punteggio(punti):
+    testo = font_punti.render(f"Punteggio: {punti}", True, BIANCO)
+    schermo.blit(testo, (10, 10))
+
+# --- Entità del gioco ---
+giocatore = pygame.Rect(400, 500, 40, 40)
+proiettili = []
+nemici = []
+punteggio = 0
+velocita_giocatore = 7
+
+# Timer per generare nemici ogni secondo
+TIMER_NEMICO = pygame.USEREVENT + 1
+pygame.time.set_timer(TIMER_NEMICO, 1000)
+
+# --- Loop Principale ---
+while True:
+    schermo.fill(NERO)
+    
+    # 1. Gestione Eventi
+    for evento in pygame.event.get():
+        if evento.type == pygame.QUIT:
+            pygame.quit()
+            sys.exit()
+        
+        # Spara con la barra spaziatrice
+        if evento.type == pygame.KEYDOWN:
+            if evento.key == pygame.K_SPACE:
+                # Crea un proiettile partendo dal centro del giocatore
+                nuovo_proiettile = pygame.Rect(giocatore.centerx - 5, giocatore.top, 10, 20)
+                proiettili.append(nuovo_proiettile)
+        
+        # Genera un nuovo nemico quando scatta il timer
+        if evento.type == TIMER_NEMICO:
+            x_casuale = random.randint(0, LARGHEZZA - 40)
+            nuovo_nemico = pygame.Rect(x_casuale, -50, 40, 40)
+            nemici.append(nuovo_nemico)
+
+    # 2. Movimento Giocatore
+    tasti = pygame.key.get_pressed()
+    if tasti[pygame.K_LEFT] and giocatore.left > 0:
+        giocatore.x -= velocita_giocatore
+    if tasti[pygame.K_RIGHT] and giocatore.right < LARGHEZZA:
+        giocatore.x += velocita_giocatore
+
+    # 3. Logica Proiettili
+    for p in proiettili[:]:  # Uso [:] per iterare su una copia della lista mentre la modifico
+        p.y -= 10
+        if p.bottom < 0:
+            proiettili.remove(p)
+
+    # 4. Logica Nemici e Collisioni
+    for n in nemici[:]:
+        n.y += 3
+        
+        # Collisione nemico-giocatore (Game Over semplificato)
+        if n.colliderect(giocatore):
+            print(f"GAME OVER! Punteggio finale: {punteggio}")
+            pygame.quit()
+            sys.exit()
+            
+        # Collisione proiettile-nemico 
+        for p in proiettili[:]:
+            if p.colliderect(n):
+                if p in proiettili: proiettili.remove(p)
+                if n in nemici: nemici.remove(n)
+                punteggio += 10
+        
+        # Rimuovi nemici fuori schermo
+        if n.top > ALTEZZA:
+            nemici.remove(n)
+
+    # 5. Disegno (Rendering)
+    pygame.draw.rect(schermo, VERDE, giocatore) # Disegna Giocatore
+    
+    for p in proiettili:
+        pygame.draw.rect(schermo, GIALLO, p)    # Disegna Proiettili
+        
+    for n in nemici:
+        pygame.draw.rect(schermo, ROSSO, n)     # Disegna Nemici
+
+    mostra_punteggio(punteggio)
+    
+    pygame.display.flip()
+    clock.tick(60)
