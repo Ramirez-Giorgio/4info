@@ -1,105 +1,157 @@
 import pygame
 import random
-import sys
+import math
 
-# --- Inizializzazione ---
-pygame.init()
-LARGHEZZA, ALTEZZA = 800, 600
-schermo = pygame.display.set_mode((LARGHEZZA, ALTEZZA))
-pygame.display.set_caption("Nebula Survival")
-clock = pygame.time.Clock()
-font_punti = pygame.font.SysFont("Arial", 30)
+# --- Configurazione Iniziale ---
+WIDTH, HEIGHT = 800, 600
+FPS = 60
 
-# --- Colori ---
-NERO = (10, 10, 20)
-BIANCO = (255, 255, 255)
-VERDE = (0, 255, 100)
-ROSSO = (255, 50, 50)
-GIALLO = (255, 255, 0)
+# Colori
+WHITE = (255, 255, 255)
+BLACK = (10, 10, 20)
+RED   = (255, 50, 50)
+CYAN  = (50, 255, 255)
+YELLOW = (255, 255, 0)
 
-# --- Classi e Funzioni ---
-def mostra_punteggio(punti):
-    testo = font_punti.render(f"Punteggio: {punti}", True, BIANCO)
-    schermo.blit(testo, (10, 10))
+class Particle:
+    """Sistema di particelle per esplosioni graficamente accattivanti."""
+    def __init__(self, x, y, color):
+        self.x = x
+        self.y = y
+        self.color = color
+        self.vx = random.uniform(-3, 3)
+        self.vy = random.uniform(-3, 3)
+        self.lifetime = 255
 
-# --- Entità del gioco ---
-giocatore = pygame.Rect(400, 500, 40, 40)
-proiettili = []
-nemici = []
-punteggio = 0
-velocita_giocatore = 7
+    def update(self):
+        self.x += self.vx
+        self.y += self.vy
+        self.lifetime -= 8
 
-# Timer per generare nemici ogni secondo
-TIMER_NEMICO = pygame.USEREVENT + 1
-pygame.time.set_timer(TIMER_NEMICO, 1000)
+    def draw(self, screen):
+        if self.lifetime > 0:
+            color = (self.lifetime, self.lifetime // 2, 0) if self.color == YELLOW else self.color
+            pygame.draw.circle(screen, color, (int(self.x), int(self.y)), 2)
 
-# --- Loop Principale ---
-while True:
-    schermo.fill(NERO)
-    
-    # 1. Gestione Eventi
-    for evento in pygame.event.get():
-        if evento.type == pygame.QUIT:
-            pygame.quit()
-            sys.exit()
+class Player(pygame.sprite.Sprite):
+    def __init__(self):
+        super().__init__()
+        self.image = pygame.Surface((40, 40), pygame.SRCALPHA)
+        pygame.draw.polygon(self.image, CYAN, [(20, 0), (40, 40), (20, 30), (0, 40)])
+        self.rect = self.image.get_rect(center=(WIDTH//2, HEIGHT-50))
+        self.speed = 6
+
+    def update(self):
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_LEFT] and self.rect.left > 0:
+            self.rect.x -= self.speed
+        if keys[pygame.K_RIGHT] and self.rect.right < WIDTH:
+            self.rect.x += self.speed
+        if keys[pygame.K_UP] and self.rect.top > 0:
+            self.rect.y -= self.speed
+        if keys[pygame.K_DOWN] and self.rect.bottom < HEIGHT:
+            self.rect.y += self.speed
+
+class Bullet(pygame.sprite.Sprite):
+    def __init__(self, x, y):
+        super().__init__()
+        self.image = pygame.Surface((5, 15))
+        self.image.fill(CYAN)
+        self.rect = self.image.get_rect(midbottom=(x, y))
+
+    def update(self):
+        self.rect.y -= 10
+        if self.rect.bottom < 0:
+            self.kill()
+
+class Enemy(pygame.sprite.Sprite):
+    def __init__(self):
+        super().__init__()
+        self.image = pygame.Surface((30, 30), pygame.SRCALPHA)
+        pygame.draw.rect(self.image, RED, [0, 0, 30, 30], 2)
+        pygame.draw.rect(self.image, RED, [10, 10, 10, 10])
+        self.rect = self.image.get_rect(x=random.randint(0, WIDTH-30), y=-50)
+        self.speed = random.randint(3, 6)
+
+    def update(self):
+        self.rect.y += self.speed
+        if self.rect.top > HEIGHT:
+            self.kill()
+
+# --- Gioco Principale ---
+def game_loop():
+    pygame.init()
+    screen = pygame.display.set_mode((WIDTH, HEIGHT))
+    pygame.display.set_caption("Nebula Defender")
+    clock = pygame.time.Clock()
+    font = pygame.font.SysFont("Arial", 24)
+
+    all_sprites = pygame.sprite.Group()
+    bullets = pygame.sprite.Group()
+    enemies = pygame.sprite.Group()
+    particles = []
+
+    player = Player()
+    all_sprites.add(player)
+
+    score = 0
+    running = True
+
+    while running:
+        # 1. Eventi
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
+                    b = Bullet(player.rect.centerx, player.rect.top)
+                    all_sprites.add(b)
+                    bullets.add(b)
+
+        # 2. Logica e Spawning
+        if random.random() < 0.05:
+            e = Enemy()
+            all_sprites.add(e)
+            enemies.add(e)
+
+        all_sprites.update()
+
+        # Collisioni Proiettile-Nemico
+        hits = pygame.sprite.groupcollide(enemies, bullets, True, True)
+        for hit in hits:
+            score += 10
+            for _ in range(15): # Crea esplosione
+                particles.append(Particle(hit.rect.centerx, hit.rect.centery, YELLOW))
+
+        # Collisioni Giocatore-Nemico
+        if pygame.sprite.spritecollide(player, enemies, False):
+            running = False # Game Over rapido
+
+        # Update Particelle
+        for p in particles[:]:
+            p.update()
+            if p.lifetime <= 0:
+                particles.remove(p)
+
+        # 3. Rendering
+        screen.fill(BLACK)
         
-        # Spara con la barra spaziatrice
-        if evento.type == pygame.KEYDOWN:
-            if evento.key == pygame.K_SPACE:
-                # Crea un proiettile partendo dal centro del giocatore
-                nuovo_proiettile = pygame.Rect(giocatore.centerx - 5, giocatore.top, 10, 20)
-                proiettili.append(nuovo_proiettile)
-        
-        # Genera un nuovo nemico quando scatta il timer
-        if evento.type == TIMER_NEMICO:
-            x_casuale = random.randint(0, LARGHEZZA - 40)
-            nuovo_nemico = pygame.Rect(x_casuale, -50, 40, 40)
-            nemici.append(nuovo_nemico)
+        # Effetto stelle di sfondo statiche/semplici
+        for _ in range(5):
+            pygame.draw.circle(screen, WHITE, (random.randint(0, WIDTH), random.randint(0, HEIGHT)), 1)
 
-    # 2. Movimento Giocatore
-    tasti = pygame.key.get_pressed()
-    if tasti[pygame.K_LEFT] and giocatore.left > 0:
-        giocatore.x -= velocita_giocatore
-    if tasti[pygame.K_RIGHT] and giocatore.right < LARGHEZZA:
-        giocatore.x += velocita_giocatore
+        all_sprites.draw(screen)
+        for p in particles:
+            p.draw(screen)
+   
+        # UI
+        score_txt = font.render(f"Score: {score}", True, WHITE)
+        screen.blit(score_txt, (10, 10))
 
-    # 3. Logica Proiettili
-    for p in proiettili[:]:  # Uso [:] per iterare su una copia della lista mentre la modifico
-        p.y -= 10
-        if p.bottom < 0:
-            proiettili.remove(p)
+        pygame.display.flip()
+        clock.tick(FPS)
 
-    # 4. Logica Nemici e Collisioni
-    for n in nemici[:]:
-        n.y += 3
-        
-        # Collisione nemico-giocatore (Game Over semplificato)
-        if n.colliderect(giocatore):
-            print(f"GAME OVER! Punteggio finale: {punteggio}")
-            pygame.quit()
-            sys.exit()
-            
-        # Collisione proiettile-nemico 
-        for p in proiettili[:]:
-            if p.colliderect(n):
-                if p in proiettili: proiettili.remove(p)
-                if n in nemici: nemici.remove(n)
-                punteggio += 10
-        
-        # Rimuovi nemici fuori schermo
-        if n.top > ALTEZZA:
-            nemici.remove(n)
+    pygame.quit()
 
-    # 5. Disegno (Rendering)
-    pygame.draw.rect(schermo, VERDE, giocatore) # Disegna Giocatore
-    
-    for p in proiettili:
-        pygame.draw.rect(schermo, GIALLO, p)    # Disegna Proiettili
-        
-    for n in nemici:
-        pygame.draw.rect(schermo, ROSSO, n)     # Disegna Nemici
-
-    mostra_punteggio(punteggio)
-    
-    pygame.display.flip()
-    clock.tick(60)
+if __name__ == "__main__":
+    game_loop()

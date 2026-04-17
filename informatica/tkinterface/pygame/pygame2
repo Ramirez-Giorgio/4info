@@ -1,0 +1,200 @@
+import pygame
+import random
+import sys
+import os
+
+# --- Configurazione Iniziale ---
+pygame.init()
+pygame.font.init()
+
+# Dimensioni Schermo
+WIDTH, HEIGHT = 800, 600
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption("Gold Rush: Collector")
+clock = pygame.time.Clock()
+FPS = 60
+
+# Configurazione Gioco
+PUNTI_PER_VINCERE = 10  # Quante monete raccogliere per vincere
+TEMPO_LIMITE = 15      # Secondi totali per vincere
+
+# NOME DEL TUO FILE IMMAGINE (DEVE ESSERE NELLA STESSA CARTELLA)
+# Cambia questo nome con il tuo file reale!
+NOME_IMMAGINE_VITTORIA = "finessi_prekirk.jpg" #IMG_4934
+
+# Colori
+NIGHT_BLUE = (15, 15, 35)
+GOLD = (255, 215, 0)
+WHITE = (255, 255, 255)
+RED = (255, 80, 80)
+GREEN = (50, 255, 50)
+
+# Font
+font_base = pygame.font.SysFont("Verdana", 28)
+font_big = pygame.font.SysFont("Verdana", 60, bold=True)
+
+class Player(pygame.sprite.Sprite):
+    def __init__(self):
+        super().__init__()
+        # Creiamo un quadrato semplice per il giocatore
+        self.image = pygame.Surface((40, 40))
+        self.image.fill(WHITE)
+        # Aggiungiamo un bordo interno stilizzato
+        pygame.draw.rect(self.image, NIGHT_BLUE, (5,5,30,30))
+        self.rect = self.image.get_rect(center=(WIDTH//2, HEIGHT//2))
+        self.speed = 7
+
+    def update(self):
+        keys = pygame.key.get_pressed()
+        if (keys[pygame.K_LEFT] or keys[pygame.K_a]) and self.rect.left > 0:
+            self.rect.x -= self.speed
+        if (keys[pygame.K_RIGHT] or keys[pygame.K_d]) and self.rect.right < WIDTH:
+            self.rect.x += self.speed
+        if (keys[pygame.K_UP] or keys[pygame.K_w]) and self.rect.top > 0:
+            self.rect.y -= self.speed
+        if (keys[pygame.K_DOWN] or keys[pygame.K_s]) and self.rect.bottom < HEIGHT:
+            self.rect.y += self.speed
+
+class Coin(pygame.sprite.Sprite):
+    def __init__(self):
+        super().__init__()
+        # Una moneta d'oro rotonda
+        self.image = pygame.Surface((30, 30), pygame.SRCALPHA)
+        pygame.draw.circle(self.image, GOLD, (15, 15), 15)
+        # Bagliore interno
+        pygame.draw.circle(self.image, WHITE, (15, 15), 8, 2)
+        self.rect = self.image.get_rect()
+        self.spawn()
+
+    def spawn(self):
+        # Evitiamo che spawni troppo vicina ai bordi
+        self.rect.x = random.randint(50, WIDTH - 50)
+        self.rect.y = random.randint(50, HEIGHT - 100) # Lasciamo spazio per la UI in basso
+
+# --- Funzione per caricare l'immagine di vittoria ---
+def load_victory_image(filename):
+    if not os.path.exists(filename):
+        print(f"ERRORE: Non riesco a trovare il file '{filename}' nella cartella corrente.")
+        print("Assicurati che il nome sia corretto e che l'immagine sia lì.")
+        pygame.quit()
+        sys.exit()
+    
+    try:
+        image = pygame.image.load(filename).convert()
+        # Ridimensiona l'immagine per adattarla allo schermo (mantenendo le proporzioni se vuoi, qui la forziamo)
+        image = pygame.transform.scale(image, (WIDTH, HEIGHT))
+        return image
+    except pygame.error as e:
+        print(f"ERRORE nel caricamento dell'immagine: {e}")
+        pygame.quit()
+        sys.exit()
+
+# --- Loop Principale del Gioco ---
+def game_loop():
+    player = Player()
+    coin = Coin()
+    
+    all_sprites = pygame.sprite.Group()
+    all_sprites.add(player)
+    all_sprites.add(coin)
+
+    punteggio = 0
+    # Gestione del tempo
+    start_ticks = pygame.time.get_ticks() # Tempo di inizio in millisecondi
+    
+    game_state = "PLAYING" # Stati: PLAYING, WON, LOST
+    victory_image = None
+
+    running = True
+    while running:
+        # 1. Eventi
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+            if game_state != "PLAYING" and event.type == pygame.KEYDOWN:
+                # Reset del gioco se si preme un tasto dopo la fine
+                game_loop()
+                return
+
+        # 2. Logica e Aggiornamenti
+        if game_state == "PLAYING":
+            all_sprites.update()
+
+            # Calcolo tempo rimanente
+            secondi_passati = (pygame.time.get_ticks() - start_ticks) / 1000
+            tempo_rimanente = max(0, TEMPO_LIMITE - secondi_passati)
+
+            # Controllo collisione Giocatore - Moneta
+            if pygame.sprite.collide_rect(player, coin):
+                punteggio += 1
+                coin.spawn() # Muovi la moneta altrove
+                # Volendo puoi aggiungere un suono qui
+
+            # Controllo Condizione di Vittoria
+            if punteggio >= PUNTI_PER_VINCERE:
+                game_state = "WON"
+                victory_image = load_victory_image(NOME_IMMAGINE_VITTORIA)
+
+            # Controllo Condizione di Sconfitta (Tempo Scaduto)
+            if tempo_rimanente <= 0:
+                game_state = "LOST"
+
+        # 3. Rendering (Disegno)
+        screen.fill(NIGHT_BLUE)
+
+        if game_state == "PLAYING":
+            # Disegna gli oggetti di gioco
+            all_sprites.draw(screen)
+
+            # Interfaccia Utente (UI)
+            # Punteggio
+            text_score = font_base.render(f"Monete: {punteggio} / {PUNTI_PER_VINCERE}", True, WHITE)
+            screen.blit(text_score, (20, 20))
+            
+            # Timer
+            color_timer = WHITE if tempo_rimanente > 5 else RED
+            text_time = font_base.render(f"Tempo: {tempo_rimanente:.1f}s", True, color_timer)
+            # Allineato a destra
+            screen.blit(text_time, (WIDTH - text_time.get_width() - 20, 20))
+
+            # Istruzioni semplici
+            text_inst = font_base.render("Usa FRECCE o WASD", True, (100, 100, 150))
+            screen.blit(text_inst, (WIDTH // 2 - text_inst.get_width()//2, HEIGHT - 40))
+
+        elif game_state == "WON":
+            # Mostra l'immagine che hai scelto
+            screen.blit(victory_image, (0, 0))
+            
+            # Sovrapponiamo un testo per chiarezza
+            text_win = font_big.render("HAI VINTO!", True, GREEN)
+            text_rect = text_win.get_rect(center=(WIDTH//2, HEIGHT//2 - 50))
+            
+            # Un piccolo sfondo nero dietro il testo per leggibilità
+            bg_rect = pygame.Rect(0, 0, text_win.get_width() + 20, text_win.get_height() + 10)
+            bg_rect.center = text_rect.center
+            pygame.draw.rect(screen, (0,0,0, 150), bg_rect) # Nero semi-trasparente se supportato
+
+            screen.blit(text_win, text_rect)
+            
+            text_restart = font_base.render("Premi un tasto per riprovare", True, WHITE)
+            screen.blit(text_restart, (WIDTH//2 - text_restart.get_width()//2, HEIGHT//2 + 50))
+
+        elif game_state == "LOST":
+            # Schermata di Game Over semplice
+            text_lose = font_big.render("TEMPO SCADUTO!", True, RED)
+            screen.blit(text_lose, (WIDTH//2 - text_lose.get_width()//2, HEIGHT//2 - 50))
+            
+            text_score_final = font_base.render(f"Punteggio finale: {punteggio}", True, WHITE)
+            screen.blit(text_score_final, (WIDTH//2 - text_score_final.get_width()//2, HEIGHT//2 + 20))
+
+            text_restart = font_base.render("Premi un tasto per riprovare", True, WHITE)
+            screen.blit(text_restart, (WIDTH//2 - text_restart.get_width()//2, HEIGHT//2 + 70))
+
+        pygame.display.flip()
+        clock.tick(FPS)
+
+    pygame.quit()
+    sys.exit()
+
+if __name__ == "__main__":
+    game_loop()
