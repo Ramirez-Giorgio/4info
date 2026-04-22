@@ -16,7 +16,7 @@ FPS = 60
 
 # Configurazione Gioco
 PUNTI_PER_VINCERE = 10  # Quante monete raccogliere per vincere
-TEMPO_LIMITE = 15      # Secondi totali per vincere
+TEMPO_LIMITE = 30      # Secondi totali per vincere
 
 # NOME DEL TUO FILE IMMAGINE (DEVE ESSERE NELLA STESSA CARTELLA)
 # Cambia questo nome con il tuo file reale!
