@@ -6,7 +6,7 @@ class Prenotazione:
         self.nome = nome
         self.eta = eta
         self.telefono = telefono
-        self.visite = visite  # Questa sarà una stringa formattata
+        self.visite = visite  
         self.priorita = priorita
 
     def __str__(self):
@@ -17,12 +17,10 @@ class GestionePrenotazioni:
         self.root = root
         self.root.title("Studio Medico - Gestione")
         self.root.geometry("600x700")
-        
-        # Lista per memorizzare gli oggetti Prenotazione
+        self.root.config(bg='pink')
+
         self.archivio = []
         
-        # --- Interfaccia Grafica ---
-        # Titolo
         self.lbl_titolo = tk.Label(root, text="GESTIONE PRENOTAZIONI", font=("Arial", 16, "bold"))
         self.lbl_titolo.pack(pady=10)
 
