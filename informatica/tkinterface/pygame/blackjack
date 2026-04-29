@@ -1,0 +1,242 @@
+import pygame
+import random
+import sys
+
+# --- CONFIGURAZIONE ---
+SCREEN_WIDTH, SCREEN_HEIGHT = 1100, 750
+FPS = 60
+
+# Palette Cromatica
+GOLD, DARK_GOLD = (212, 175, 55), (150, 120, 40)
+DEEP_GREEN, TABLE_BORDER = (15, 60, 30), (10, 40, 20)
+CARD_WHITE, CARD_BACK = (250, 250, 250), (160, 35, 35)
+RED_SUIT, BLACK_SUIT = (200, 20, 20), (30, 30, 30)
+CHIP_COLORS = {5: (200, 200, 200), 50: (50, 100, 200), 100: (30, 30, 30), 500: (200, 160, 20)}
+
+RISK_FACTS = [
+    "La 'Dissonanza Cognitiva' ti fa dimenticare le perdite.",
+    "Il gioco d'azzardo è un costo, non un investimento.",
+    "L'illusione del controllo: il caso non si può dominare.",
+    "Il desiderio di recupero è il primo passo verso il debito.",
+    "Più giochi, più la matematica rema contro di te.",
+    "Il gioco d'azzardo altera la percezione del valore del denaro.",
+    "La dopamina rilasciata è simile a quella delle droghe pesanti.",
+    "Il banco vince sempre nel lungo periodo. È statistica.",
+    "Hai appena perso denaro reale virtualizzato. Fermati."
+]
+
+class Card:
+    def __init__(self, suit, rank):
+        self.suit, self.rank = suit, rank
+        self.value = 10 if rank in ['J', 'Q', 'K'] else (11 if rank == 'A' else int(rank))
+        self.pos = [100, 100] 
+        self.target = [0, 0]
+        self.speed = 18
+
+    def update_pos(self):
+        dx, dy = self.target[0] - self.pos[0], self.target[1] - self.pos[1]
+        dist = (dx**2 + dy**2)**0.5
+        if dist > self.speed:
+            self.pos[0] += dx/dist * self.speed
+            self.pos[1] += dy/dist * self.speed
+        else: self.pos = list(self.target)
+
+class BlackjackGame:
+    def __init__(self):
+        pygame.init()
+        self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+        pygame.display.set_caption("Blackjack Pro: Responsible Edition")
+        self.clock = pygame.time.Clock()
+        
+        self.font_title = pygame.font.SysFont("Garamond", 50, bold=True)
+        self.font_card = pygame.font.SysFont("Arial", 28, bold=True)
+        self.font_ui = pygame.font.SysFont("Verdana", 18, bold=True)
+        self.font_score = pygame.font.SysFont("Arial", 20, bold=True)
+        self.font_warn = pygame.font.SysFont("Verdana", 15, italic=True)
+        self.font_final = pygame.font.SysFont("Georgia", 22, italic=True)
+
+        self.balance = 1000
+        self.bet = 0
+        self.state = "BETTING" 
+        self.reset_round()
+        
+        # Gestione Warning
+        self.current_warn = random.choice(RISK_FACTS)
+        self.warn_timer = 0
+        self.final_fact_timer = 0 # Timer specifico per la schermata finale
+
+    def reset_round(self):
+        suits, ranks = ['♥', '♦', '♣', '♠'], ['2','3','4','5','6','7','8','9','10','J','Q','K','A']
+        self.deck_list = [Card(s, r) for s in suits for r in ranks]
+        random.shuffle(self.deck_list)
+        self.player_hand, self.dealer_hand = [], []
+        self.msg = "PIAZZA LA TUA PUNTATA"
+
+    def add_card(self, target_hand, x, y):
+        if self.deck_list:
+            card = self.deck_list.pop()
+            card.target = [x, y]
+            target_hand.append(card)
+
+    def get_score(self, hand):
+        score = sum(c.value for c in hand)
+        aces = sum(1 for c in hand if c.rank == 'A')
+        while score > 21 and aces: score -= 10; aces -= 1
+        return score
+
+    def draw_chip(self, val, x, y):
+        m, click = pygame.mouse.get_pos(), pygame.mouse.get_pressed()
+        rect = pygame.Rect(x-35, y-35, 70, 70)
+        hover = rect.collidepoint(m)
+        pygame.draw.circle(self.screen, (20, 20, 20), (x+3, y+3), 35)
+        pygame.draw.circle(self.screen, CHIP_COLORS[val], (x, y), 35 if not hover else 38)
+        pygame.draw.circle(self.screen, (255,255,255), (x, y), 30, 2)
+        txt = self.font_score.render(str(val), True, (255,255,255))
+        self.screen.blit(txt, (x - txt.get_width()//2, y - txt.get_height()//2))
+        if hover and click[0] and self.state == "BETTING":
+            if self.balance >= val:
+                self.bet += val; self.balance -= val
+                pygame.time.delay(150)
+
+    def run(self):
+        while True:
+            self.screen.fill(TABLE_BORDER)
+            pygame.draw.ellipse(self.screen, DEEP_GREEN, (50, 50, 1000, 600))
+            pygame.draw.ellipse(self.screen, GOLD, (50, 50, 1000, 600), 3)
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT: pygame.quit(); sys.exit()
+
+            for c in self.player_hand + self.dealer_hand: c.update_pos()
+
+            # Disegno Carte e Score
+            for i, c in enumerate(self.dealer_hand):
+                self.draw_card_ui(c, (i==1 and self.state in ["PLAYER"]))
+            for c in self.player_hand: self.draw_card_ui(c)
+
+            if len(self.player_hand) >= 2:
+                self.draw_score_badge(self.get_score(self.player_hand), 450, 540, "Tu")
+                if self.state not in ["PLAYER"]:
+                    self.draw_score_badge(self.get_score(self.dealer_hand), 450, 75, "Banco")
+
+            # Fiches
+            self.draw_chip(5, 950, 150); self.draw_chip(50, 950, 240)
+            self.draw_chip(100, 950, 330); self.draw_chip(500, 950, 420)
+
+            # Pannello Comandi
+            pygame.draw.rect(self.screen, BLACK_SUIT, (0, 650, 1100, 100))
+            self.screen.blit(self.font_ui.render(f"CREDITI: €{self.balance}", True, GOLD), (50, 670))
+            self.screen.blit(self.font_ui.render(f"PUNTATA: €{self.bet}", True, (200,200,200)), (50, 700))
+
+            # Warning dinamico durante il gioco
+            if self.balance < 500 and self.state != "BANKRUPT":
+                self.warn_timer += 1
+                if self.warn_timer > 300: # 5 sec
+                    self.current_warn = random.choice(RISK_FACTS)
+                    self.warn_timer = 0
+                txt_w = self.font_warn.render(f"AVVISO: {self.current_warn}", True, GOLD)
+                self.screen.blit(txt_w, (SCREEN_WIDTH//2 - txt_w.get_width()//2, 615))
+
+            self.screen.blit(self.font_title.render(self.msg, True, GOLD), (SCREEN_WIDTH//2 - self.font_title.size(self.msg)[0]//2, 280))
+
+            # Logica Stati
+            if self.state == "BETTING":
+                if self.btn("DISTRIBUISCI", 450, 675, 200, 45, (20, 80, 20)) and self.bet > 0:
+                    self.add_card(self.player_hand, 450, 380); self.add_card(self.player_hand, 500, 380)
+                    self.add_card(self.dealer_hand, 450, 120); self.add_card(self.dealer_hand, 500, 120)
+                    self.state = "PLAYER"; self.msg = ""
+                if self.btn("RESET", 700, 675, 100, 45, (60, 60, 60)) and self.bet > 0:
+                    self.balance += self.bet; self.bet = 0
+
+            elif self.state == "PLAYER":
+                if self.btn("CARTA", 400, 675, 130, 45, (50, 50, 50)):
+                    self.add_card(self.player_hand, 450 + len(self.player_hand)*40, 380)
+                    if self.get_score(self.player_hand) > 21: self.end_round()
+                if self.btn("STAI", 560, 675, 130, 45, (150, 20, 20)): self.state = "DEALER"
+
+            elif self.state == "DEALER":
+                if self.get_score(self.dealer_hand) < 17:
+                    self.add_card(self.dealer_hand, 450 + len(self.dealer_hand)*40, 120)
+                    pygame.time.delay(500)
+                else: self.end_round()
+
+            elif self.state == "RESULT":
+                if self.btn("PROSSIMA MANO", 450, 675, 200, 45, (40, 40, 40)):
+                    self.reset_round(); self.state = "BETTING"
+
+            elif self.state == "BANKRUPT":
+                self.draw_bankrupt_overlay()
+
+            pygame.display.flip()
+            self.clock.tick(FPS)
+
+    def draw_card_ui(self, card, hidden=False):
+        x, y = card.pos
+        rect = pygame.Rect(x, y, 100, 145)
+        pygame.draw.rect(self.screen, (0,0,0,80), rect.move(4,4), border_radius=12)
+        if hidden:
+            pygame.draw.rect(self.screen, CARD_BACK, rect, border_radius=12)
+            pygame.draw.rect(self.screen, GOLD, rect, 3, border_radius=12)
+        else:
+            pygame.draw.rect(self.screen, CARD_WHITE, rect, border_radius=12)
+            pygame.draw.rect(self.screen, GOLD, rect, 2, border_radius=12)
+            color = RED_SUIT if card.suit in ['♥', '♦'] else BLACK_SUIT
+            self.screen.blit(self.font_card.render(card.rank, True, color), (x+8, y+5))
+            self.screen.blit(self.font_card.render(card.suit, True, color), (x+8, y+35))
+
+    def draw_score_badge(self, score, x, y, label):
+        badge_rect = pygame.Rect(x, y, 90, 30)
+        pygame.draw.rect(self.screen, BLACK_SUIT, badge_rect, border_radius=15)
+        pygame.draw.rect(self.screen, GOLD, badge_rect, 2, border_radius=15)
+        txt = self.font_score.render(f"{label}: {score}", True, GOLD)
+        self.screen.blit(txt, (x + (90-txt.get_width())//2, y+5))
+
+    def btn(self, text, x, y, w, h, color):
+        m, click = pygame.mouse.get_pos(), pygame.mouse.get_pressed()
+        rect = pygame.Rect(x, y, w, h)
+        hover = rect.collidepoint(m)
+        pygame.draw.rect(self.screen, ([min(c+40,255) for c in color] if hover else color), rect, border_radius=8)
+        txt = self.font_ui.render(text, True, (255,255,255))
+        self.screen.blit(txt, (x+(w-txt.get_width())//2, y+(h-txt.get_height())//2))
+        if hover and click[0]: pygame.time.delay(200); return True
+        return False
+
+    def end_round(self):
+        p, d = self.get_score(self.player_hand), self.get_score(self.dealer_hand)
+        if p > 21: self.msg = "SBALLATO!"; self.bet = 0
+        elif d > 21 or p > d: self.msg = "HAI VINTO!"; self.balance += self.bet * 2; self.bet = 0
+        elif d > p: self.msg = "IL BANCO VINCE"; self.bet = 0
+        else: self.msg = "PAREGGIO"; self.balance += self.bet; self.bet = 0
+        self.state = "RESULT"
+        if self.balance <= 0 and self.bet == 0: self.state = "BANKRUPT"
+
+    def draw_bankrupt_overlay(self):
+        # Update della frase ogni 3 secondi (180 frame a 60 FPS)
+        self.final_fact_timer += 1
+        if self.final_fact_timer > 180:
+            self.current_warn = random.choice(RISK_FACTS)
+            self.final_fact_timer = 0
+
+        overlay = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA)
+        overlay.fill((0, 0, 0, 245))
+        self.screen.blit(overlay, (0,0))
+        
+        title = self.font_title.render("BILANCIO AZZERATO", True, RED_SUIT)
+        self.screen.blit(title, (SCREEN_WIDTH//2 - title.get_width()//2, 200))
+        
+        # Testo dinamico che cambia
+        fact_surf = self.font_final.render(self.current_warn, True, (230, 230, 230))
+        self.screen.blit(fact_surf, (SCREEN_WIDTH//2 - fact_surf.get_width()//2, 350))
+        
+        help_txt = self.font_ui.render("CHIEDI AIUTO GRATUITAMENTE: 800 55 88 22", True, GOLD)
+        self.screen.blit(help_txt, (SCREEN_WIDTH//2 - help_txt.get_width()//2, 450))
+        
+        exit_txt = self.font_warn.render("Premi ESC per uscire", True, (100, 100, 100))
+        self.screen.blit(exit_txt, (SCREEN_WIDTH//2 - exit_txt.get_width()//2, 650))
+        
+        # Permetti l'uscita
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_ESCAPE]: pygame.quit(); sys.exit()
+
+if __name__ == "__main__":
+    BlackjackGame().run()

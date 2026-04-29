@@ -1,17 +1,27 @@
-# CREAZIONE FILE valori.txt
-with open("valori.txt", "w") as f:
-    f.write("10\n5\n15\n20")
-numeri = []
-with open("valori.txt", "r") as f:
-    for riga in f:
-        numeri.append(int(riga.strip()))
-somma = sum(numeri)
-print("Somma dei numeri:", somma)
-incrementi = {}
-for numero in numeri:
-    incremento = numero + 1   # incremento semplice
-    incrementi[numero] = incremento
-with open("risultati_incrementati.txt", "w") as f:
-    for originale, incrementato in incrementi.items():
-        f.write(f"{originale}==>{incrementato}\n")
-print("Risultati salvati nel file risultati_incrementati.txt")
+import tkinter as tk
+from PIL import Image,ImageTk
+
+# class GestionePrenotazione:
+#     def __init__(self, nome, eta, telefono, visite, priorita):
+#         self.nome = nome
+#         self.eta = eta
+#         self.telefono = telefono
+#         self.visite = visite  
+#         self.priorita = priorita
+
+#     def __str__(self):
+#         return self.nome + " - " + self.visite + " - " + self.priorita
+
+class Prenotazione:
+    def __init__(self,master=None):
+        self.master = master
+        self.master.title('visite mediche') 
+        self.master.geometry('600x700')
+        self.master.config(bg='pink')
+
+        self.archivio = []
+
+if  __name__  == '__main__' :
+    finestra = tk.Tk()
+    app = Prenotazione()
+    finestra.mainloop()
