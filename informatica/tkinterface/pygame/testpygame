@@ -1,32 +1,29 @@
 import pygame
 import sys
-
 #Inizializzazione di Pygame
 pygame.init()
-
 #Creazione di una finestra
-screen = pygame.display.set_mode((800, 600))
+screen = pygame.display.set_mode((1000  , 600))
 pygame.display.set_caption('Il mio primo gioco con Pygame')
-
 #Impostazione del colore dello sfondo
 background_color = (0, 0, 0) #Nero
-
+#Caricamento di un&#39;immagine
+image = pygame.image.load('IMG_4934.JPEG')
 #Game loop
 running = True
 while running:
 #Gestione degli eventi
-#pygame.QUIT significa che l&#39;utente fa clic su X per chiudere la finestra
+#pygame.QUIT significa che l&#39;utente fa click su X per chiudere la finestra
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-
-#Riempie lo schermo con il colore di sfondo
-screen.fill(background_color)
-
-#Blocco istruzioni per il gioco
-#flip() permette l&#39;aggiornamento della finestra
-pygame.display.flip()
-
+    #Riempie lo schermo con il colore di sfondo
+    screen.fill(background_color)
+    #Disegna l&#39;immagine nella posizione specificata
+    screen.blit(image, (100, 150))
+    #Blocco istruzioni per il gioco
+    #flip() permette l&#39;aggiornamento della finestra
+    pygame.display.flip()
 #Chiusura di Pygame
 pygame.quit()
 sys.exit()
